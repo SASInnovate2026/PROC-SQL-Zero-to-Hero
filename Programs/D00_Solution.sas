@@ -1,5 +1,10 @@
-/* libname sqw "path to choc_enterprise"; */
-/* libname out "path to choc_output"; */
+/**************************/
+/* PROC SQL: Zero to Hero */
+/* SAS Innovate 2026      */
+/**************************/
+
+libname sqw "/home/student/workshop/SQL_Prog"; 
+libname out "/home/student/workshop/SQL_Prog/output"; 
 
 /*******************************/
 /* Examine PROC SQL Statements */
@@ -155,29 +160,41 @@ quit;
 
 /* Join sqw.choc_enterprise_orders, sqw.choc_enterprise_items and out.customers_cleaned tables. */
 
-/* Join the orders and item tables on the item_rk column to create ordersItems.                 */
+/* Put columns names into macro variables to use on SELECT clause. */
+proc sql;
+select name
+     into :ord_col separated by ","
+     from dictionary.columns
+     where libname="SQW" and memname="CHOC_ENTERPRISE_ORDERS";
+quit;
+
+proc sql;
+select name
+     into :item_col separated by ","
+     from dictionary.columns
+     where libname="SQW" and memname="CHOC_ENTERPRISE_ITEM";
+quit;
+
+%put &item_col;
+
+proc sql;
+select name
+     into :cust_col separated by ","
+     from dictionary.columns
+     where libname="OUT" and memname="CUSTOMERS_CLEANED";
+quit;
+
+%put &ord_col , &item_col , &cust_col;
+
 /* INNER JOIN: Returns matching rows based on join criteria.                                    */
-proc sql;
-create table out.ordersItems as
-select *
-	from sqw.choc_enterprise_orders as o 
-		inner join sqw.choc_enterprise_item as i
-	on o.item_rk = i.item_rk;
-quit;
-
-/* Join out.ordersItems with out.customers_cleaned on the customer_rk column to create out.ordersItemsCustomers. */
-proc sql;
-create table out.ordersItemsCustomers as
-select *
-	from out.ordersItems as oi 
-		inner join out.customers_cleaned as c
-	on oi.customer_rk= c.customer_rk;
-quit;
-
 /* Join all 3 tables at the same time to create out.ordItemsCust. */
 proc sql;
 create table out.ordItemsCust as
-select *
+select continent,transaction_id,date,date_year,total_line_item_cost,transaction_line_item_no,retail_transaction_type_cd,order_channel,
+        order_type,total_line_item_sale_amt,item_qty,list_price_amt,item_cost_amt,o.item_rk,store_id,o.customer_rk,country_cd,country_nm,state_region_cd,
+        state_region_nm,county_nm,city_nm,postal_cd,retail_outlet_name,retail_outlet_format_cd,retail_outlet_type_cd,store_size,address_line_1,
+        product_line,category,package,item_desc,customer_name,Customer_Names_Cleaned,Email,bday_month,age,customer_self_description,
+        loyalty_program
 	from sqw.choc_enterprise_orders as o 
 		inner join sqw.choc_enterprise_item as i
 	on o.item_rk = i.item_rk 
